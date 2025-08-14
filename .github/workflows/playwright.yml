@@ -5,6 +5,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+
 # Global environment variables
 env:
   USER_EMAIL: ${{ secrets.USER_EMAIL }}
@@ -16,7 +17,8 @@ jobs:
   setup-dependencies:
     runs-on: ubuntu-latest
     outputs:
-      cache-hit: ${{ steps.cache-node.outputs.cache-hit }}
+      node-cache-key: ${{ steps.cache-node.outputs.cache-primary-key }}
+      pw-cache-key: ${{ steps.cache-pw.outputs.cache-primary-key }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -34,57 +36,62 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
       - name: Cache Playwright browsers
+        id: cache-pw
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Lint
+        run: npm run lint
+
   functional:
     needs: setup-dependencies
     runs-on: ubuntu-latest
-    env:
-      USER_EMAIL: ${{ secrets.USER_EMAIL }}
-      USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
-      WRONG_EMAIL: ${{ secrets.WRONG_EMAIL }}
-    environment: production
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Restore Node.js cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ needs.setup-dependencies.outputs.node-cache-key }}
+
+      - name: Restore Playwright browsers cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ needs.setup-dependencies.outputs.pw-cache-key }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
       - name: Run functional tests (Chrome only)
         run: npm run functional:ci
+
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: functional-report-chromium
           path: playwright-report
-            test-results
 
   accessibility:
     needs: setup-dependencies
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' # manual trigger
-    environment: production
+    if: github.event_name == 'workflow_dispatch'
     strategy:
       matrix:
         browser: [chromium]
@@ -92,16 +99,22 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Restore Node.js cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ needs.setup-dependencies.outputs.node-cache-key }}
+
+      - name: Restore Playwright browsers cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ needs.setup-dependencies.outputs.pw-cache-key }}
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
 
       - name: Run accessibility tests
         run: npm run accessibility:ci
@@ -116,8 +129,7 @@ jobs:
   cross-browser:
     needs: setup-dependencies
     runs-on: ubuntu-latest
-    environment: production
-    if: github.event_name == 'workflow_dispatch' # manual trigger
+    if: github.event_name == 'workflow_dispatch'
     strategy:
       matrix:
         browser: [firefox, webkit]
@@ -125,27 +137,25 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Download storage state
-        uses: actions/download-artifact@v4
+      - name: Restore Node.js cache
+        uses: actions/cache@v4
         with:
-          name: storage-state
+          path: ~/.npm
+          key: ${{ needs.setup-dependencies.outputs.node-cache-key }}
+
+      - name: Restore Playwright browsers cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ needs.setup-dependencies.outputs.pw-cache-key }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run functional tests on Safari
-        run: npm run functional-safari:ci
-
-      - name: Run functional tests on Firefox
-        run: npm run functional-firefox:ci
+      - name: Run functional tests on ${{ matrix.browser }}
+        run: npm run functional-${{ matrix.browser }}:ci
 
       - name: Upload Playwright HTML Report
         if: always()
