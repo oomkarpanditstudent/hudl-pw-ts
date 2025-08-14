@@ -10,6 +10,7 @@ env:
   USER_EMAIL: ${{ secrets.USER_EMAIL }}
   USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
   WRONG_EMAIL: ${{ secrets.WRONG_EMAIL }}
+  ENVIRONMENT: production
 
 jobs:
   setup-dependencies:
@@ -47,6 +48,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
   functional:
+    needs: setup-dependencies
     runs-on: ubuntu-latest
     env:
       USER_EMAIL: ${{ secrets.USER_EMAIL }}
@@ -69,8 +71,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run functional tests (Chrome only)
-        run: npx playwright test --project=functional --project=functional-login-ui --browser chromium
-
+        run:  npm run functional:ci
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -80,6 +81,7 @@ jobs:
             test-results
 
   accessibility:
+    needs: setup-dependencies
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' # manual trigger
     environment: production
@@ -102,16 +104,17 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run accessibility tests
-        run: npx playwright test --project=accessibility --browser ${{ matrix.browser }}
+        run: npm run accessibility:ci
 
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: accessibility-report-${{ matrix.browser }}
+          name: accessibility-report
           path: playwright-report
 
   cross-browser:
+    needs: setup-dependencies
     runs-on: ubuntu-latest
     environment: production
     if: github.event_name == 'workflow_dispatch' # manual trigger
@@ -138,8 +141,11 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run functional tests
-        run: npx playwright test --project=functional --browser ${{ matrix.browser }}
+      - name: Run functional tests on Safari
+        run:  npm run functional-safari:ci
+      
+      - name: Run functional tests on Firefox
+        run:  npm run functional-firefox:ci
 
       - name: Upload Playwright HTML Report
         if: always()
