@@ -22,12 +22,12 @@ export default defineConfig({
   reporter: process.env.CI
     ? [
         ['dot'], // fast console output for CI
-        ['junit', { outputFile: 'results.xml' }], 
-        ['html', { open: 'never' }] 
+        ['junit', { outputFile: 'results.xml' }],
+        ['html', { open: 'never' }],
       ]
     : [
         ['list'], // prettier local console output
-        ['html']  // local HTML report auto-open
+        ['html'], // local HTML report auto-open
       ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
