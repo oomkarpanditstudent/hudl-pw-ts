@@ -5,8 +5,8 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch:
 
-# Global environment variables
 env:
   USER_EMAIL: ${{ secrets.USER_EMAIL }}
   USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
@@ -20,146 +20,58 @@ jobs:
       node-cache-key: ${{ steps.cache-node.outputs.cache-primary-key }}
       pw-cache-key: ${{ steps.cache-pw.outputs.cache-primary-key }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Cache Node.js modules
-        id: cache-node
+      - uses: actions/checkout@v4
+      - id: cache-node
         uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Cache Playwright browsers
-        id: cache-pw
+      - run: npm ci
+      - id: cache-pw
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - run: npx playwright install --with-deps
+      - run: npm run lint
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Lint
-        run: npm run lint
-
-  functional:
+  tests:
     needs: setup-dependencies
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Restore Node.js cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ needs.setup-dependencies.outputs.node-cache-key }}
-
-      - name: Restore Playwright browsers cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ needs.setup-dependencies.outputs.pw-cache-key }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Run functional tests (Chrome only)
-        run: npm run functional:ci
-
-      - name: Upload Playwright HTML Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: functional-report-chromium
-          path: playwright-report
-
-  accessibility:
-    needs: setup-dependencies
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
     strategy:
       matrix:
-        browser: [chromium]
+        suite: [functional, accessibility, cross-browser]
+        browser: [chromium, firefox, webkit]
+        exclude:
+          - suite: accessibility
+            browser: firefox
+          - suite: accessibility
+            browser: webkit
+          - suite: functional
+            browser: firefox
+          - suite: functional
+            browser: webkit
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Restore Node.js cache
-        uses: actions/cache@v4
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ needs.setup-dependencies.outputs.node-cache-key }}
-
-      - name: Restore Playwright browsers cache
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ needs.setup-dependencies.outputs.pw-cache-key }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Run accessibility tests
-        run: npm run accessibility:ci
-
+      - run: npm run ${{ matrix.suite }}-${{ matrix.browser }}:ci -- --workers=4
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: accessibility-report
-          path: playwright-report
-
-  cross-browser:
-    needs: setup-dependencies
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    strategy:
-      matrix:
-        browser: [firefox, webkit]
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Restore Node.js cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ needs.setup-dependencies.outputs.node-cache-key }}
-
-      - name: Restore Playwright browsers cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ needs.setup-dependencies.outputs.pw-cache-key }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Run functional tests on ${{ matrix.browser }}
-        run: npm run functional-${{ matrix.browser }}:ci
-
-      - name: Upload Playwright HTML Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: functional-report-${{ matrix.browser }}
+          name: ${{ matrix.suite }}-report-${{ matrix.browser }}
           path: playwright-report
