@@ -28,7 +28,7 @@ jobs:
 
       - name: Lint
         run: npm run lint
-   
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
@@ -42,4 +42,3 @@ jobs:
           name: functional-report-chromium
           path: playwright-report
             test-results
-  
