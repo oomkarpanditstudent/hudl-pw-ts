@@ -5,9 +5,10 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch: # allows manual trigger for cross-browser / accessibility jobs
 
 jobs:
-  # This job creates storageState.json for smart login
+  # Setup job for smart login
   setup:
     runs-on: ubuntu-latest
     env:
@@ -38,15 +39,83 @@ jobs:
           name: storage-state
           path: .storageState.json
 
+  # Functional tests on Chrome for PR feedback
   functional:
     needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download storage state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run functional tests (smart login)
+        run: npx playwright test --project=functional
+
+      - name: Run functional login UI tests
+        run: npx playwright test --project=functional-login-ui
+
+      - name: Upload Playwright HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: functional-report-chrome
+          path: playwright-report
+
+  # Accessibility tests (manual, non-blocking)
+  accessibility:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
-    env:
-      USER_EMAIL: ${{ secrets.USER_EMAIL }}
-      USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run accessibility tests
+        run: npx playwright test --project=accessibility --browser ${{ matrix.browser }}
+
+      - name: Upload Playwright HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report-${{ matrix.browser }}
+          path: playwright-report
+
+  # Cross-browser functional tests (manual, non-blocking)
+  cross-browser:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [firefox, webkit]
+    needs: setup
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -75,34 +144,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: functional-report-${{ matrix.browser }}
-          path: playwright-report
-
-  accessibility:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        browser: [chromium, firefox, webkit]
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run accessibility tests
-        run: npx playwright test --project=accessibility --browser ${{ matrix.browser }}
-
-      - name: Upload Playwright HTML Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: accessibility-report-${{ matrix.browser }}
           path: playwright-report
