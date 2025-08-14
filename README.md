@@ -86,7 +86,3 @@ On CI, junit test results will also be available in results.xml
 
 For detailed testing strategy, coverage, and shift-left approach, see:
 [TEST-APPROACH.md](./TEST-APPROACH.md)
-
-## To do
-
-Github Actions Integration
