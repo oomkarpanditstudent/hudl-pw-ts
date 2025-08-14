@@ -1,5 +1,3 @@
----
-
 ## **`TEST-APPROACH.md`**
 
 ```markdown
@@ -45,17 +43,17 @@ A separate high level overall test scenarios document is created in excel and wi
 
 ## Key Considerations and Implementations:
 
-- CI Integration for Early Feedback: Automated tests to run on every PR to catch issues early.
-- Secrets Management: No secrets to be stored in plain text within the codebase.
-- Linting & Code Quality: Husky pre-commit hooks enforcing linting and code formatting using prettier, ensuring readable, maintainable, and high-quality code.
-- Smart Login: Smart login to provide login state to tests by default during test setup. Authenticated state to be used to bypass repetitive UI login flows. This allows QEs to focus on testing relevant functionality rather than login itself. Separate UI tests for login features will exist as a separate project such as functional-login-ui to ensure, the login feature itself is testing adequately on its own.
-- Data-Driven Testing: Positive and negative scenarios to share fixtures and test data to reduce duplication. Helper functions and abstractions enhance readability, maintainability, and enforce DRY principles.
-- Page Object Model (POM): Using POM pattern, locators and page-level interactions to be stored separated from tests, making tests easier to maintain and understand.
-- Accessibility Checks: WCAG compliance to be validated in CI using Playwright + axe-core. Failure only on Critical or Severe issues identification.
-- Cross-Browser Testing: Testing via Chromium, Firefox, and WebKit.
-- Visual Evidence: Screenshots, videos, and HTML reports retained for analysis.
-- Retry Strategy: CI retries failures to reduce flakiness.
-- Security: NPM audit to run in CI to proactively address vulnerabilities.
+- **CI Integration for Early Feedback:** Automated tests to run on every PR to catch issues early.  
+- **Secrets Management:** No secrets to be stored in plain text within the codebase.  
+- **Linting & Code Quality:** Husky pre-commit hooks enforcing linting and code formatting using prettier, ensuring readable, maintainable, and high-quality code.  
+- **Smart Login:** Smart login to provide login state to tests by default during test setup. Authenticated state to be used to bypass repetitive UI login flows. This allows QEs to focus on testing relevant functionality rather than login itself. Separate UI tests for login features will exist as a separate project such as `functional-login-ui` to ensure, the login feature itself is testing adequately on its own.  
+- **Data-Driven Testing:** Positive and negative scenarios to share fixtures and test data to reduce duplication. Helper functions and abstractions enhance readability, maintainability, and enforce DRY principles.  
+- **Page Object Model (POM):** Using POM pattern, locators and page-level interactions to be stored separated from tests, making tests easier to maintain and understand.  
+- **Accessibility Checks:** WCAG compliance to be validated in CI using Playwright + axe-core. Failure only on Critical or Severe issues identification.  
+- **Cross-Browser Testing:** Testing via Chromium, Firefox, and WebKit.  
+- **Visual Evidence:** Screenshots, videos, and HTML reports retained for analysis.  
+- **Retry Strategy:** CI retries failures to reduce flakiness.  
+- **Security:** NPM audit to run in CI to proactively address vulnerabilities.  
 
 ---
 
