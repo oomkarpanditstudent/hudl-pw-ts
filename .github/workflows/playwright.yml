@@ -15,7 +15,7 @@ jobs:
       USER_EMAIL: ${{ secrets.USER_EMAIL }}
       USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
       WRONG_EMAIL: ${{ secrets.WRONG_EMAIL }}
-    environment: production   
+    environment: production
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
