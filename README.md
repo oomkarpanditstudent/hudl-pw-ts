@@ -88,3 +88,7 @@ Although this project focuses on Login feature but this project can double up as
 
    For detailed testing strategy, coverage, and shift-left approach, see:
    [TEST-APPROACH.md](./TEST-APPROACH.md)
+   
+## To do
+
+   Github Actions Integration
