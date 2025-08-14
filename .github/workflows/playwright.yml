@@ -5,19 +5,21 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
-  workflow_dispatch: # Allows manual trigger for all jobs
-
-env: # Global environment variables
+# Global environment variables
+env:
   USER_EMAIL: ${{ secrets.USER_EMAIL }}
   USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
   WRONG_EMAIL: ${{ secrets.WRONG_EMAIL }}
   ENVIRONMENT: production
 
 jobs:
-  functional:
+  setup-dependencies:
     runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.cache-node.outputs.cache-hit }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Cache Node.js modules
         id: cache-node
@@ -34,42 +36,61 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Lint
+        run: npm run lint
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+  functional:
+    needs: setup-dependencies
+    runs-on: ubuntu-latest
+    env:
+      USER_EMAIL: ${{ secrets.USER_EMAIL }}
+      USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+      WRONG_EMAIL: ${{ secrets.WRONG_EMAIL }}
+    environment: production
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       - name: Run functional tests (Chrome only)
         run: npm run functional:ci
-
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: functional-report-chromium
           path: playwright-report
+            test-results
 
   accessibility:
+    needs: setup-dependencies
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' # manual trigger only
+    if: github.event_name == 'workflow_dispatch' # manual trigger
+    environment: production
+    strategy:
+      matrix:
+        browser: [chromium]
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache Node.js modules
-        id: cache-node
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -77,14 +98,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -100,22 +114,21 @@ jobs:
           path: playwright-report
 
   cross-browser:
+    needs: setup-dependencies
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' # manual trigger only
+    environment: production
+    if: github.event_name == 'workflow_dispatch' # manual trigger
     strategy:
       matrix:
         browser: [firefox, webkit]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Cache Node.js modules
-        id: cache-node
-        uses: actions/cache@v4
+      - name: Download storage state
+        uses: actions/download-artifact@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          name: storage-state
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -123,20 +136,16 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run functional tests
-        run: npm run functional-${{ matrix.browser }}:ci
+      - name: Run functional tests on Safari
+        run: npm run functional-safari:ci
+
+      - name: Run functional tests on Firefox
+        run: npm run functional-firefox:ci
 
       - name: Upload Playwright HTML Report
         if: always()
