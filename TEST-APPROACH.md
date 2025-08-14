@@ -1,5 +1,3 @@
-## **`TEST-APPROACH.md`**
-
 # Hudl Test Approach & Coverage
 
 This document outlines the test strategy, shift-left approach, and coverage levels used in this project.
