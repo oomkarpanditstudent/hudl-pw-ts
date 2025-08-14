@@ -7,7 +7,7 @@ on:
     branches: [master]
 
 jobs:
-  setup-dependencies:
+  setup-and-run-regression-test:
     runs-on: ubuntu-latest
     env:
       USER_EMAIL: ${{ secrets.USER_EMAIL }}
