@@ -1,0 +1,5 @@
+echo "Running prettier..."
+npm run format
+echo "Running linting..."
+npm run lint
+

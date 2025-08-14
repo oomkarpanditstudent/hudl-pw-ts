@@ -67,5 +67,6 @@ Future enhancements may include:
 - Adding performance checks in CI
 - Secret Scanning on pre-commit hook
 - Integration with SonarQube
+- Check for storageState expiry before skipping.
 
 ---

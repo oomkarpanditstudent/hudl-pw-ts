@@ -1,0 +1,37 @@
+{
+  "name": "pw-ts-hudl",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "accessibility:local": "npx playwright test --headed --project=accessibility",
+    "accessibility:ci": "npx playwright test --project=accessibility",
+    "functional:local": "npx playwright test --headed --project=functional --project=functional-login-ui",
+    "functional:local:headless": "npx playwright test --project=functional --project=functional-login-ui",
+    "functional:ci": "npx playwright test --project=functional --project=functional-login-ui",
+    "functional-safari:ci": "npx playwright test --headed --project=functional-webkit ",
+    "functional-firefox:ci": "npx playwright test --headed --project=functional-firefox"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@eslint/js": "^9.33.0",
+    "@playwright/test": "^1.54.2",
+    "@types/node": "^24.2.1",
+    "axe-core": "^4.10.3",
+    "eslint": "^9.33.0",
+    "eslint-plugin-playwright": "^2.2.2",
+    "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.39.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  }
+}
