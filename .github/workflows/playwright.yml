@@ -6,15 +6,15 @@ on:
   pull_request:
     branches: [master]
 env:
-    USER_EMAIL: ${{ secrets.USER_EMAIL }}
-    USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
-    WRONG_EMAIL: ${{ secrets.WRONG_EMAIL }}
-    environment: production
+  USER_EMAIL: ${{ secrets.USER_EMAIL }}
+  USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+  WRONG_EMAIL: ${{ secrets.WRONG_EMAIL }}
+  environment: production
 jobs:
-    test:
-      timeout-minutes: 60
-      runs-on: ubuntu-latest
-      steps:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
