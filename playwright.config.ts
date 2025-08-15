@@ -7,7 +7,7 @@ dotenv.config();
 const storageStatePath = path.resolve(__dirname, '.storageState.json');
 
 export default defineConfig({
-  timeout: 120_000,
+  timeout: 60_000,
   expect: { timeout: 15_000 },
   testDir: './tests',
   /* Run tests in files in parallel */
@@ -33,7 +33,7 @@ export default defineConfig({
     screenshot: 'on',
     video: 'retain-on-failure',
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on',
+    trace: 'on-first-retry',
   },
 
   /* Configure projects for major browsers */

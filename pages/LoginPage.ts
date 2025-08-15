@@ -31,7 +31,7 @@ export class LoginPage {
 
   async goToHomePage() {
     await this.page.goto('/');
-    //await this.acceptCookiesBtn.click(); //temporary block for ci investigation.
+    //await this.acceptCookiesBtn.click(); //to do uncomment after ci investigations.
   }
 
   async login(email: string, password: string) {
