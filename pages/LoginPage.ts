@@ -31,7 +31,7 @@ export class LoginPage {
 
   async goToHomePage() {
     await this.page.goto('/');
-    await this.acceptCookiesBtn.click();
+    //await this.acceptCookiesBtn.click();
   }
 
   async login(email: string, password: string) {
