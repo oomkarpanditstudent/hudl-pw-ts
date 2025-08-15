@@ -12,7 +12,7 @@
     "functional:local": "npx playwright test --headed --project=functional --project=functional-login-ui",
     "functional:local:headless": "npx playwright test --project=functional --project=functional-login-ui",
     "functional:ci": "npx playwright test --project=functional --project=functional-login-ui",
-    "login:ci": "npx playwright test --project=functional --project=functional-login-ui",
+    "login:ci": "npx playwright test --project=functional-login-ui",
     "functional-safari:ci": "npx playwright test --headed --project=functional-webkit ",
     "functional-firefox:ci": "npx playwright test --headed --project=functional-firefox"
   },
