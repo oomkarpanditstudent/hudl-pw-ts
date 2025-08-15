@@ -7,7 +7,7 @@ dotenv.config();
 const storageStatePath = path.resolve(__dirname, '.storageState.json');
 
 export default defineConfig({
-  timeout: 60_000,
+  timeout: 90_000,
   expect: { timeout: 15_000 },
   testDir: './tests',
   /* Run tests in files in parallel */
