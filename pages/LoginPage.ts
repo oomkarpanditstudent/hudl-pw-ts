@@ -31,7 +31,8 @@ export class LoginPage {
 
   async goToHomePage() {
     await this.page.goto('/');
-    if (await this.acceptCookiesBtn.isVisible()) { //to be geolocation agnostic
+    if (await this.acceptCookiesBtn.isVisible()) {
+      //to be geolocation agnostic
       await this.acceptCookiesBtn.click();
     }
   }
