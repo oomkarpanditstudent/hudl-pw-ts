@@ -23,7 +23,7 @@ jobs:
         run: |
           pip install detect-secrets
           detect-secrets scan > .secrets.baseline
-          detect-secrets audit .secrets.baseline
+          detect-secrets audit .secrets.baseline --non-interactive
 
       - uses: actions/setup-node@v4
         with:
