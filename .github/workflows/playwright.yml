@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
       - run: npm ci
       - name: Audit npm dependencies for vulnerabilities
-        run: npm audit --audit-level=high 
+        run: npm audit --audit-level=high
       - run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
       - name: Run Playwright tests
