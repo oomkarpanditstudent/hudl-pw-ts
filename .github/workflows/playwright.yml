@@ -55,9 +55,18 @@ jobs:
       - name: Run Playwright tests
         if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
         run: 'npm run functional:ci'
-      - uses: actions/upload-artifact@v4
+      
+      - name: Upload Artifacts - Playwright Reports
+        uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
-        with:
-          name: playwright-report
-          path: playwright-report/
+      - name: Upload Playwright report
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
+        run: |
+          if [ -d "playwright-report" ]; then
+            echo "Uploading Playwright report..."
+            gh run upload-artifact playwright-report --name playwright-report
+          else
+            echo "No report folder found, skipping upload."
+          fi
+       
           retention-days: 4
