@@ -2,7 +2,7 @@ name: Hudl Playwright
 'on':
   push:
     branches:
-      - master
+      - ['*']
   pull_request:
     branches:
       - master
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Scan & audit for secrets
-        if: github.event_name == 'pull_request'
+        if: github.ref != 'refs/heads/master'
         run: |
           pip install detect-secrets
           detect-secrets scan > .secrets.baseline
@@ -46,14 +46,15 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
       - name: Audit npm dependencies for vulnerabilities
-        if: github.event_name == 'pull_request'
+        if: github.ref != 'refs/heads/master'
         run: npm audit --audit-level=high
 
       - name: Run Linting
-        if: github.event_name == 'pull_request'
+        if: github.ref != 'refs/heads/master'
         run: npm run lint
 
       - name: Run Playwright tests
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
         run: 'npm run functional:ci'
       - uses: actions/upload-artifact@v4
         if: always()
