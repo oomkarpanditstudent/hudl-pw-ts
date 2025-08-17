@@ -55,7 +55,7 @@ jobs:
       - name: Run Playwright tests
         if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
         run: 'npm run functional:ci'
-      
+
       - name: Upload Artifacts - Playwright Reports
         uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
@@ -68,5 +68,5 @@ jobs:
           else
             echo "No report folder found, skipping upload."
           fi
-       
+
           retention-days: 4
