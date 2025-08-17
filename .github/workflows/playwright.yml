@@ -55,7 +55,7 @@ jobs:
       - name: Run Playwright tests
         if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
         run: 'npm run functional:ci'
-        
+
       - name: Upload Artifacts - Playwright Reports
         if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/master') && always()
         uses: actions/upload-artifact@v4
