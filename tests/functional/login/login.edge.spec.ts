@@ -7,7 +7,8 @@ import {
 } from '../../../utils/checkCredentials';
 
 test.describe('Edge case: login state transitions', () => {
-  const nonRegisteredEmail = 'user1@typo.com'; // to do: reset this user's login attempts in before hook to avoid locking
+  // Generate a random non-registered email to avoid lockout
+  const nonRegisteredEmail = `user1+${Date.now()}@typo.com`;
   const wrongPassword = WRONG_PASSWORD;
   const errorMsgEmailTypo = 'Incorrect username or password.';
   const errorMsgPwdTypo = 'Your email or password is incorrect. Try again.';
