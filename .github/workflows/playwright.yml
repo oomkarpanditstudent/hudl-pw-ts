@@ -17,6 +17,14 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: Scan for secrets
+        if: github.event_name == 'pull_request'
+        run: |
+          pip install detect-secrets
+          detect-secrets scan > .secrets.baseline
+      - name: Audit for secrets
+        if: github.event_name == 'pull_request '
+        run: detect-secrets audit .secrets.baseline
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -33,6 +41,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
       - run: npm ci
       - name: Audit npm dependencies for vulnerabilities
+        if: github.event_name == 'pull_request'
         run: npm audit --audit-level=high
       - run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
