@@ -35,7 +35,6 @@ jobs:
           "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
           >> $GITHUB_ENV
       - name: Cache playwright binaries
-
         uses: actions/cache@v4
         id: playwright-cache
         with:
@@ -53,7 +52,7 @@ jobs:
       - name: Run Linting
         if: github.event_name == 'pull_request'
         run: npm run lint
-      
+
       - name: Run Playwright tests
         run: 'npm run functional:ci'
       - uses: actions/upload-artifact@v4
